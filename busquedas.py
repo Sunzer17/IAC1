@@ -152,17 +152,22 @@ def bfs(inicial, meta):
     visitados = set()   #Conjunto de estados visitados para no visitar el mismo estado más de una vez.
     frontera = deque()  #Cola de nodos aún por explorar. Se agrega el nodo inicial.  
     frontera.append(Nodo(inicial, None, None, 0, calcular_heurisitica(inicial)))
-    
+    contnodos = 0
     while frontera:                         #Mientras haya nodos por explorar:
         nodo = frontera.popleft()           #Se toma el primer nodo de la cola.
 
         if nodo.estado not in visitados:    #Si no se había visitado, 
             visitados.add(nodo.estado)      #se agrega al conjunto de visitados.
+            contnodos = contnodos +1
         else:                               #Si ya se había visitado
             continue                        #se ignora.
+            contnodos = contnodos +1
         
         if nodo.estado == meta:                         #Si es una meta, 
-            print("\n¡Se encontró la meta!")            
+            print("\n¡Se encontró el estado meta final")
+            print("********************************************************")
+            print("\n¡La cantidad de nodos totales fue:",contnodos-1)     
+            print("********************************************************")     
             return nodo.encontrar_camino(inicial)       #se regresa el camino para llegar a él y termina el algoritmo.        
         else:                                           #Si no es una meta, 
             frontera.extend(nodo.encontrar_sucesores()) #se agregan sus sucesores a los nodos por explorar.
@@ -172,17 +177,22 @@ def dfs(inicial, meta, profundidad_max):
     visitados = set()   #Conjunto de estados visitados para no visitar el mismo estado más de una vez.
     frontera = deque()  #Pila de nodos aún por explorar. Se agrega el nodo inicial.
     frontera.append(Nodo(inicial, None, None, 0, calcular_heurisitica(inicial)))
-    
+    contnodos = 0
     while frontera:                         #Mientras haya nodos por explorar:
         nodo = frontera.pop()               #Se toma el primer nodo de la pila.
-
+        
         if nodo.estado not in visitados:    #Si no se había visitado, 
             visitados.add(nodo.estado)      #se agrega al conjunto de visitados.
+            contnodos = contnodos +1
         else:                               #Si ya se visitó,
             continue                        #se ignora.
+            contnodos = contnodos +1
         
         if nodo.estado == meta:             #Si es una meta, se regresa el camino para llegar a él y termina el algoritmo.
-            print("\n¡Se encontró la meta!")            
+            print("\n¡Se encontró el estado meta final")
+            print("********************************************************")
+            print("\n¡La cantidad de nodos totales fue:",contnodos-1)     
+            print("********************************************************")    
             return nodo.encontrar_camino(inicial)
         else:                               #Si no es una meta:             
             if profundidad_max > 0:                             #Si se estableció una búsqueda con profundidad limitada
@@ -195,13 +205,15 @@ def dfs(inicial, meta, profundidad_max):
 def hc(inicial):
     visitados = set()  #Conjunto de estados visitados para no visitar el mismo estado más de una vez.
     nodo_actual = Nodo(inicial, None, None, 0, calcular_heurisitica(inicial))
-
+    contnodos = 0
     while nodo_actual.piezas_correctas < 9:             #Mientras el estado actual no tenga todas las piezas en su lugar:
         sucesores = nodo_actual.encontrar_sucesores()   #Se buscan los sucesores del estado actual
         max_piezas_correctas = -1
 
         #Para cada nodo en los sucesores, se busca el que tenga más piezas en su lugar.
+        
         for nodo in sucesores:   
+            contnodos = contnodos +1
             if nodo.piezas_correctas >= max_piezas_correctas and nodo not in visitados:
                 max_piezas_correctas = nodo.piezas_correctas
                 nodo_siguiente = nodo
@@ -214,29 +226,32 @@ def hc(inicial):
             nodo_actual = nodo_siguiente
         #Si no, significa que se llegó a un máximo local y el algoritmo no debe seguir.
         else:
-            print("\nSe llegó a un máximo local. No se encontró la meta.")
+            print("*********************************")
+            print("\nNo se encontró el estado final.")
+            print("*********************************")
             break
     else:
-        print("\n¡Se encontró la meta!")        
+        print("********************************************************")
+        print("\n¡La cantidad de nodos totales fue:",contnodos-1)     
+        print("********************************************************")
     return nodo_actual.encontrar_camino(inicial)
 
 #Función main.
 def main():
     estado_final = (1, 2, 3, 4, 5, 6, 7, 8, 0)
     estado_inicial = (1, 2, 3, 4, 5, 6, 0, 7,8)
-    #estado_inicial = (1, 2, 3, 4, 5, 0, 7, 8, 6)   #De este estado se puede resolver en un movimiento.
-    myArray = [1,2,3,4,]
-    tuplaa = tuple(myArray)
-    print(tuplaa)
+
 
     #Menú principal
     print("Programa para dar solución al puzzle 8")
-    print("Estado inicial de ejemplo: ")
+    print("Estado inicial por defecto: ")
     (Nodo(estado_inicial, None, None, 0, calcular_heurisitica(estado_inicial))).imprimir_nodo()
+    print("Estado final por defecto: ")
+    (Nodo(estado_final, None, None, 0, calcular_heurisitica(estado_inicial))).imprimir_nodo()
     print("¿Desea crear un nuevo estado inicial?")
-    estadoInic = input("Ingrese s para continuar, n para rechazar: \n")
+    estadoInic = input("Ingrese 1 para crear nuevos estados, 2 para utilizar estados predefinidos \n")
 
-    if estadoInic == "s" or estadoInic == "S":
+    if estadoInic == '2':
 
         print("\nDigite el número para elegir el tipo de búsqueda a compilar: ")
         print("1. Búsqueda de Primero en Amplitud (BPA)")
@@ -266,34 +281,49 @@ def main():
     #Se imprime el camino si existe y si el usuario lo desea.
         if nodos_camino:
             print ("El camino tiene", len(nodos_camino), "movimientos.")
-            imprimir_camino = (input ("¿Desea imprimir dicho camino? s/n: "))
-
-            if imprimir_camino == "s" or imprimir_camino == "S":
-                print("\nEstado inicial:")
-                (Nodo(estado_inicial, None, None, 0, calcular_heurisitica(estado_inicial))).imprimir_nodo()
-                print ("Piezas correctas:", calcular_heurisitica(estado_inicial), "\n")
-                input("Presione \"enter\" para continuar.")
-                
-                for nodo in nodos_camino:
-                    print("\nSiguiente movimiento:", nodo.movimiento)
-                    print("Estado actual:")
-                    nodo.imprimir_nodo()
-                    print("Piezas correctas:", nodo.piezas_correctas, "\n")     
-                    input("Presione \"enter\" para continuar.")
+            print("\nEstado inicial:")
+            (Nodo(estado_inicial, None, None, 0, calcular_heurisitica(estado_inicial))).imprimir_nodo()
+            print ("numeros ubicados correctamente:", calcular_heurisitica(estado_inicial), "\n")
+            listaMov = []   
+            for nodo in nodos_camino:
+                print("\nSiguiente movimiento:", nodo.movimiento)
+                listaMov.append(nodo.movimiento)
+                print("Estado actual:")
+                nodo.imprimir_nodo()
+                print("numeros ubicados correctamente:", nodo.piezas_correctas, "\n")   
+            print("Todos los movimientos para llegar a solución",listaMov)
+            print("Para consultar el total de nodos efectuados en la ejecución, navegue hasta el inicio de los recorridos")
         else:
             print ("\nNo se encontró un camino con las condiciones dadas.")
 
         return 0   
 
-    elif estadoInic == "n" or estadoInic == "N":
-        lista = []
+    elif estadoInic == '1':
+        listaI = []
+        contador = 9
         for x in range(9):
-            valor=int(input("Ingrese un valor entero: entre 0 y 9: \n"))
-            lista.append(valor)
-        nuevoEstado = tuple(lista)
+            print("Faltan",contador-x,"números")
+            valor=int(input("Ingrese un valor entero: entre 0 y 8 sin repetir: \n"))
+            listaI.append(valor)
+            
+        nuevoEstado = tuple(listaI)
         estado_inicial = nuevoEstado
         print("Estado inicial nuevo: ")
         (Nodo(estado_inicial, None, None, 0, calcular_heurisitica(estado_inicial))).imprimir_nodo()
+        listaF = []
+        print("Ingreso de estado final")
+        for x in range(9):
+            valor=int(input("Ingrese un valor entero: entre 0 y 8 sin repetir: \n"))
+            print("Faltan",contador-x,"números")
+            listaF.append(valor)
+        nuevoEstadoF = tuple(listaF)
+        estado_final = nuevoEstadoF
+        print("-------------------------------------")
+        print("Estado inicial nuevo: ")
+        (Nodo(estado_inicial, None, None, 0, calcular_heurisitica(estado_inicial))).imprimir_nodo()
+        print("Estado Final nuevo: ")
+        (Nodo(estado_final, None, None, 0, calcular_heurisitica(estado_inicial))).imprimir_nodo()
+        print("-------------------------------------")
         print("\nDigite el número para elegir el tipo de búsqueda a compilar: ")
         print("1. Búsqueda de Primero en Amplitud (BPA)")
         print("2. Búsqueda de Primero en Profundidad (BPP)")
@@ -320,26 +350,24 @@ def main():
             return 0
 
     #Se imprime el camino si existe y si el usuario lo desea.
-        if nodos_camino:
-            print ("El camino tiene", len(nodos_camino), "movimientos.")
-            imprimir_camino = (input ("¿Desea imprimir dicho camino? s/n: "))
+    if nodos_camino:
+        print ("El camino tiene", len(nodos_camino), "movimientos.")
+        print("\nEstado inicial:")
+        (Nodo(estado_inicial, None, None, 0, calcular_heurisitica(estado_inicial))).imprimir_nodo()
+        print ("numeros ubicados correctamente:", calcular_heurisitica(estado_inicial), "\n")
+        listaMov = []   
+        for nodo in nodos_camino:
+            print("\nSiguiente movimiento:", nodo.movimiento)
+            listaMov.append(nodo.movimiento)
+            print("Estado actual:")
+            nodo.imprimir_nodo()
+            print("numeros ubicados correctamente:", nodo.piezas_correctas, "\n")   
+        print("Todos los movimientos para llegar a solución",listaMov)
+        print("Para consultar el total de nodos efectuados en la ejecución, navegue hasta el inicio de los recorridos")
+    else:
+        print ("\nNo se encontró un camino con las condiciones dadas.")
 
-            if imprimir_camino == "s" or imprimir_camino == "S":
-                print("\nEstado inicial:")
-                (Nodo(estado_inicial, None, None, 0, calcular_heurisitica(estado_inicial))).imprimir_nodo()
-                print ("Piezas correctas:", calcular_heurisitica(estado_inicial), "\n")
-                input("Presione \"enter\" para continuar.")
-                
-                for nodo in nodos_camino:
-                    print("\nSiguiente movimiento:", nodo.movimiento)
-                    print("Estado actual:")
-                    nodo.imprimir_nodo()
-                    print("Piezas correctas:", nodo.piezas_correctas, "\n")     
-                    input("Presione \"enter\" para continuar.")
-        else:
-            print ("\nNo se encontró un camino con las condiciones dadas.")
-
-        return 0   
+    return 0   
  
 
 if __name__ == "__main__":
