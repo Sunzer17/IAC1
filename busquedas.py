@@ -1,5 +1,6 @@
 from collections import deque
-
+import copy as cpy
+import numpy as np
 #Clase que define un nodo en el 8-puzzle.
 class Nodo:
     def __init__(self, estado, padre, movimiento, profundidad, piezas_correctas):        
@@ -9,55 +10,100 @@ class Nodo:
         self.profundidad = profundidad              #Posición del nodo en el árbol de búsqueda.
         self.piezas_correctas = piezas_correctas    #Total de piezas en su lugar para este estado.
 
-    #Método para mover las piezas en direcciones posibles.
-    def mover(self, direccion):
-        estado = list(self.estado)
-        ind = estado.index(0)
-
-        if direccion == "arriba":            
-            if ind not in [6, 7, 8]:                
-                temp = estado[ind + 3]
-                estado[ind + 3] = estado[ind]
-                estado[ind] = temp
-                return tuple(estado)
-            else:                
+    #Mover la pieza que está a la izquierda
+    def movIzqBlco(self,t,posBlanco):
+        x = cpy.deepcopy(t)
+        fila = int(str(posBlanco[0])[1])
+        col = int(str(posBlanco[1])[1])
+        try:
+            if(not col-1 < 0):
+                pivote = x[fila][col-1]
+                x[fila][col-1] = 0
+                x[fila][col] = pivote
+                y = []
+                y.extend(x[0])
+                y.extend(x[1])
+                y.extend(x[2])
+                return tuple(y)
+            else:
                 return None
+        except:
+            pass
 
-        elif direccion == "abajo":            
-            if ind not in [0, 1, 2]:                
-                temp = estado[ind - 3]
-                estado[ind - 3] = estado[ind]
-                estado[ind] = temp
-                return tuple(estado)
-            else:                
+        #Mover la pieza que está a la derecha    
+    def movDerBlco(self,t,posBlanco):
+        x = cpy.deepcopy(t)
+        fila = int(str(posBlanco[0])[1])
+        col = int(str(posBlanco[1])[1])
+        try:
+            if(not col+1 > 2):
+                pivote = x[fila][col+1]
+                x[fila][col+1] = 0
+                x[fila][col] = pivote
+                y = []
+                y.extend(x[0])
+                y.extend(x[1])
+                y.extend(x[2])
+                return tuple(y)
+            else:
                 return None
-
-        elif direccion == "derecha":            
-            if ind not in [0, 3, 6]:                
-                temp = estado[ind - 1]
-                estado[ind - 1] = estado[ind]
-                estado[ind] = temp
-                return tuple(estado)
-            else:                
+        except:
+            pass
+    
+    #Mover la pieza que está arriba
+    def movArrBlco(self,t,posBlanco):
+        x = cpy.deepcopy(t)
+        fila = int(str(posBlanco[0])[1])
+        col = int(str(posBlanco[1])[1])
+        try:
+            if(not fila-1 < 0):
+                pivote = x[fila-1][col]
+                x[fila-1][col] = 0
+                x[fila][col] = pivote
+                y = []
+                y.extend(x[0])
+                y.extend(x[1])
+                y.extend(x[2])
+                return tuple(y)
+            else:
                 return None
+        except:
+            pass
 
-        elif direccion == "izquierda":            
-            if ind not in [2, 5, 8]:                
-                temp = estado[ind + 1]
-                estado[ind + 1] = estado[ind]
-                estado[ind] = temp
-                return tuple(estado)
-            else:                
-                return None        
+    #Mover la pieza que está abajo
+    def movAbjBlco(self,t,posBlanco):
+        x = cpy.deepcopy(t)
+        fila = int(str(posBlanco[0])[1])
+        col = int(str(posBlanco[1])[1])
+        try:
+            if(not fila+1 > 2):
+                pivote = x[fila+1][col]
+                x[fila+1][col] = 0
+                x[fila][col] = pivote
+                y = []
+                y.extend(x[0])
+                y.extend(x[1])
+                y.extend(x[2])
+                return tuple(y)
+            else:
+                return None
+        except:
+            pass        
 
     #Método que encuentra y regresa todos los nodos sucesores del nodo actual.
     def encontrar_sucesores(self):
+        matriz = np.array(self.estado)
+        matriz = [list(matriz[0:3]),list(matriz[3:6]),list(matriz[6:9])]
+        matriz = np.array(matriz)
+        pos = np.where(matriz == 0)
+
         sucesores = []
-        sucesorN = self.mover("arriba")
-        sucesorS = self.mover("abajo")
-        sucesorE = self.mover("derecha")
-        sucesorO = self.mover("izquierda")
+        sucesorN = self.movArrBlco(matriz,pos)
+        sucesorS = self.movAbjBlco(matriz,pos)
+        sucesorE = self.movIzqBlco(matriz,pos)
+        sucesorO = self.movDerBlco(matriz,pos)
         
+
         sucesores.append(Nodo(sucesorN, self, "arriba", self.profundidad + 1, calcular_heurisitica(sucesorN)))
         sucesores.append(Nodo(sucesorS, self, "abajo", self.profundidad + 1, calcular_heurisitica(sucesorS)))
         sucesores.append(Nodo(sucesorE, self, "derecha", self.profundidad + 1, calcular_heurisitica(sucesorE)))
@@ -177,7 +223,7 @@ def hc(inicial):
 #Función main.
 def main():
     estado_final = (1, 2, 3, 4, 5, 6, 7, 8, 0)
-    estado_inicial = (4, 2, 0, 7, 3, 6, 1, 8, 5)
+    estado_inicial = (1, 2, 3, 4, 5, 6, 0, 7,8)
     #estado_inicial = (1, 2, 3, 4, 5, 0, 7, 8, 6)   #De este estado se puede resolver en un movimiento.
     myArray = [1,2,3,4,]
     tuplaa = tuple(myArray)
